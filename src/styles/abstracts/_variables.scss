@@ -1,0 +1,20 @@
+/* 设计令牌（Design Tokens）：FC 复古配色 + 布局常量
+ * - CSS 自定义属性（--xxx）：可穿透 scoped 样式，组件内直接用 var(--xxx)
+ * - SCSS 变量（$xxx）：仅供 build-time 计算，不输出到 CSS
+ */
+
+@use 'sass:math';
+
+:root {
+  --bg: #0a0a12;
+  --frame: #c8a860;
+  --win-bg: #101828;
+  --win-light: #d0d8e8;
+  --win-dark: #384058;
+  --win-text: #e8e8f0;
+  --gold: #f8e048;
+}
+
+// 布局常量
+$stage-ratio: math.div(4, 3);
+$stage-max-width: 960px;

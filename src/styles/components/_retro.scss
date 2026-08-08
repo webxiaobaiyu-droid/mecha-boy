@@ -1,0 +1,50 @@
+/* 复古像素 UI 控件：窗口、菜单行、按钮 */
+
+.pixel-window {
+  background: var(--win-bg);
+  border-top: 2px solid var(--win-light);
+  border-left: 2px solid var(--win-light);
+  border-right: 2px solid var(--win-dark);
+  border-bottom: 2px solid var(--win-dark);
+  outline: 2px solid #000;
+  color: var(--win-text);
+  image-rendering: pixelated;
+
+  .title {
+    color: var(--gold);
+    font-weight: bold;
+  }
+}
+
+.menu-row {
+  cursor: pointer;
+  white-space: nowrap;
+
+  &.sel {
+    color: var(--gold);
+
+    &::before {
+      content: '▶';
+      position: absolute;
+      left: -14px;
+      color: var(--gold);
+    }
+  }
+}
+
+.btn-retro {
+  background: var(--win-bg);
+  color: var(--win-light);
+  border: 2px solid #000;
+  border-top-color: var(--win-light);
+  border-left-color: var(--win-light);
+  border-bottom-color: var(--win-dark);
+  border-right-color: var(--win-dark);
+  font-family: inherit;
+  padding: 4px 10px;
+  cursor: pointer;
+
+  &:active {
+    filter: brightness(1.4);
+  }
+}

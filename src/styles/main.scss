@@ -1,0 +1,7 @@
+/* 全局样式入口：按 7-1 模式组织，@use 顺序 = 依赖顺序 */
+
+@use 'abstracts/variables';
+@use 'base/reset';
+@use 'base/base';
+@use 'components/retro';
+@use 'components/stage';

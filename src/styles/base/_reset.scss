@@ -1,0 +1,7 @@
+/* 极简 reset：本作是像素风单页游戏，收敛到盒模型 + 清零即可 */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

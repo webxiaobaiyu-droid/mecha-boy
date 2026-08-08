@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+.DS_Store
+.env*
+!.env.example
+
+# Offline previews keep reviewable PNGs; raw PPM frames are generated locally.
+preview/*.ppm
+
+# Unrelated local project kept beside the game workspace.
+display-pilot-front/

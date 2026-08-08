@@ -1,0 +1,69 @@
+:root {
+  --bg: #0a0a12;
+  --frame: #c8a860;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+#shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+canvas#game {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+  border: 4px solid var(--frame);
+  box-shadow: 0 0 24px rgba(200, 168, 96, 0.35), inset 0 0 8px rgba(0,0,0,0.6);
+  width: min(96vw, calc(96vh * 4 / 3), 960px);
+  height: auto;
+  aspect-ratio: 4 / 3;
+  touch-action: none;
+}
+
+#touch { display: none; }
+
+@media (pointer: coarse) {
+  #touch {
+    display: flex;
+    width: min(96vw, 640px);
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  #pad {
+    display: grid;
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: repeat(2, 44px);
+    gap: 4px;
+  }
+  #pad .tbtn[data-k="up"]    { grid-column: 2; grid-row: 1; }
+  #pad .tbtn[data-k="left"]  { grid-column: 1; grid-row: 2; }
+  #pad .tbtn[data-k="down"]  { grid-column: 2; grid-row: 2; }
+  #pad .tbtn[data-k="right"] { grid-column: 3; grid-row: 2; }
+  #ab { display: flex; gap: 10px; }
+  .tbtn {
+    width: 44px; height: 44px;
+    border: 2px solid var(--frame);
+    border-radius: 8px;
+    background: #1c1c2a;
+    color: var(--frame);
+    font-size: 16px;
+    font-weight: bold;
+    opacity: 0.75;
+    touch-action: none;
+    user-select: none;
+  }
+  .tbtn:active { background: #3a3a55; }
+}

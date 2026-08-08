@@ -1,0 +1,126 @@
+:root {
+  --bg: #0a0a12;
+  --frame: #c8a860;
+  --win-bg: #101828;
+  --win-light: #d0d8e8;
+  --win-dark: #384058;
+  --gold: #f8e048;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  font-family: "PingFang SC", "Microsoft YaHei", "Courier New", monospace;
+  user-select: none;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+canvas#game-canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+  border: 4px solid var(--frame);
+  box-shadow: 0 0 24px rgba(200, 168, 96, 0.35);
+  width: min(96vw, calc(96vh * 4 / 3), 960px);
+  aspect-ratio: 4 / 3;
+  touch-action: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage {
+  position: relative;
+  width: min(96vw, calc(96vh * 4 / 3), 960px);
+  aspect-ratio: 4 / 3;
+}
+
+.pixel-window {
+  background: var(--win-bg);
+  border-top: 2px solid var(--win-light);
+  border-left: 2px solid var(--win-light);
+  border-right: 2px solid var(--win-dark);
+  border-bottom: 2px solid var(--win-dark);
+  outline: 2px solid #000;
+  color: #e8e8f0;
+  image-rendering: pixelated;
+}
+
+.pixel-window .title {
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.menu-row {
+  cursor: pointer;
+  white-space: nowrap;
+}
+.menu-row.sel {
+  color: var(--gold);
+}
+.menu-row.sel::before {
+  content: "▶";
+  position: absolute;
+  left: -14px;
+  color: var(--gold);
+}
+
+.btn-retro {
+  background: var(--win-bg);
+  color: #d0d8e8;
+  border: 2px solid #000;
+  border-top-color: var(--win-light);
+  border-left-color: var(--win-light);
+  border-bottom-color: var(--win-dark);
+  border-right-color: var(--win-dark);
+  font-family: inherit;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.btn-retro:active {
+  filter: brightness(1.4);
+}
+
+#touch { display: none; }
+@media (pointer: coarse) {
+  #touch {
+    display: flex;
+    width: min(96vw, 640px);
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  #pad { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(2, 44px); gap: 4px; }
+  #pad .tbtn[data-k="up"] { grid-column: 2; grid-row: 1; }
+  #pad .tbtn[data-k="left"] { grid-column: 1; grid-row: 2; }
+  #pad .tbtn[data-k="down"] { grid-column: 2; grid-row: 2; }
+  #pad .tbtn[data-k="right"] { grid-column: 3; grid-row: 2; }
+  #ab { display: flex; gap: 10px; }
+  .tbtn {
+    width: 44px; height: 44px;
+    border: 2px solid var(--frame);
+    border-radius: 8px;
+    background: #1c1c2a;
+    color: var(--frame);
+    font-size: 16px;
+    font-weight: bold;
+    opacity: 0.75;
+    touch-action: none;
+  }
+  .tbtn:active { background: #3a3a55; }
+}
