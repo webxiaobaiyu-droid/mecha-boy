@@ -1,8 +1,18 @@
-import { Container, Graphics, Sprite, Texture } from 'pixi.js'
+import { Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js'
 import { ACTOR_ASSETS } from '@/game/assets'
 import { TANKS as TANK_DEFS } from '@/game/data/equipment'
 import { CAVES, ROOMS, TOWNS, WORLD_H, WORLD_W } from '@/game/data/maps'
-import { DECOR_BLOCK, TS, drawDecor, drawFurniture, hash, townDecor } from '@/game/engine/tileart'
+import {
+  DECOR_BLOCK,
+  TS,
+  drawBuilding,
+  drawDecor,
+  drawFurniture,
+  drawTownTile,
+  hash,
+  neighbors,
+  townDecor
+} from '@/game/engine/tileart'
 import { bakeMap } from '@/game/engine/map-baker'
 import { overworldTankVisualFor } from '@/game/assets/tanks'
 import type { GameState, RoomDef, TankState } from '@/game/types'
@@ -90,6 +100,7 @@ export class ExplorationScene extends Container {
   private player = new Sprite(Texture.EMPTY)
   private playerTank = new TankActor()
   private gateLayer = new Container()
+  private townBackdrop: TilingSprite | null = null
   private gateGraphics = new Map<string, Graphics>()
   private mapTextures = new Map<string, Texture>()
   private generatedTextures: Texture[] = []
@@ -164,6 +175,7 @@ export class ExplorationScene extends Container {
       this.cameraY += (targetCameraY - this.cameraY) * ease
     }
     this.world.position.set(Math.round(-this.cameraX), Math.round(-this.cameraY))
+    this.updateTownBackdrop(scale)
 
     const outdoors = state.map === 'world' || TOWNS.some((town) => town.id === state.map)
     return {
@@ -219,24 +231,64 @@ export class ExplorationScene extends Container {
     for (const texture of this.generatedTextures) texture.destroy(true)
     this.generatedTextures = []
     this.gateGraphics.clear()
+    this.townBackdrop = null
 
     let texture = this.mapTextures.get(state.map)
     if (!texture) {
-      texture = canvasTexture(bakeMap(state.map))
+      texture = canvasTexture(bakeMap(state.map, { includeStructures: false }))
       this.mapTextures.set(state.map, texture)
     }
     const mapSprite = new Sprite(texture)
     mapSprite.zIndex = 0
-    this.world.addChild(mapSprite, this.gateLayer)
 
     const town = TOWNS.find((item) => item.id === state.map)
     const room = ROOMS.find((item) => item.id === state.map)
+    if (town) this.addTownBackdrop(town)
+    this.world.addChild(mapSprite, this.gateLayer)
     for (const npc of town?.npcs || room?.npcs || []) this.addNpc(npc)
-    if (town) this.addTownProps(town)
+    if (town) {
+      this.addTownBuildings(town)
+      this.addTownProps(town)
+    }
     if (room) this.addRoomProps(room, state)
     if (state.map === 'world') this.addWorldGates()
 
     this.world.addChild(this.player, this.playerTank)
+  }
+
+  private addTownBackdrop(town: (typeof TOWNS)[number]) {
+    const cacheKey = `${town.id}:backdrop`
+    let texture = this.mapTextures.get(cacheKey)
+    if (!texture) {
+      const patternSize = 4
+      const grid = Array.from({ length: patternSize }, () => ' '.repeat(patternSize))
+      const { canvas, context } = createCanvas(patternSize * TS, patternSize * TS)
+      for (let y = 0; y < patternSize; y++) {
+        for (let x = 0; x < patternSize; x++) {
+          drawTownTile(
+            { ctx: context, x, y, h: hash(x, y, 991), n: neighbors(grid, x, y) },
+            ' ',
+            town
+          )
+        }
+      }
+      texture = canvasTexture(canvas)
+      this.mapTextures.set(cacheKey, texture)
+    }
+    this.townBackdrop = new TilingSprite({ texture, width: TS, height: TS })
+    this.townBackdrop.zIndex = -10
+    this.world.addChild(this.townBackdrop)
+  }
+
+  private updateTownBackdrop(scale: number) {
+    if (!this.townBackdrop) return
+    const padding = TS * 2
+    const x = this.cameraX / scale - padding
+    const y = this.cameraY / scale - padding
+    this.townBackdrop.position.set(x, y)
+    this.townBackdrop.width = this.screenWidth / scale + padding * 2
+    this.townBackdrop.height = this.screenHeight / scale + padding * 2
+    this.townBackdrop.tilePosition.set(x, y)
   }
 
   private addNpc(npc: { x: number; y: number; sp: string }) {
@@ -246,6 +298,30 @@ export class ExplorationScene extends Container {
     sprite.position.set(npc.x * TS + TS / 2, npc.y * TS + TS)
     sprite.zIndex = npc.y * TS + TS
     this.world.addChild(sprite)
+  }
+
+  private addTownBuildings(town: (typeof TOWNS)[number]) {
+    for (const building of town.buildings) {
+      const paddingLeft = 18
+      const paddingTop = 18
+      const paddingRight = 34
+      const paddingBottom = 22
+      const width = building.w * TS + paddingLeft + paddingRight
+      const height = building.h * TS + paddingTop + paddingBottom
+      const cameraX = building.x * TS - paddingLeft
+      const cameraY = building.y * TS - paddingTop
+      const { canvas, context } = createCanvas(width, height)
+      context.save()
+      context.translate(-cameraX, -cameraY)
+      drawBuilding(context, building, hash(building.x, building.y, 202), town.id)
+      context.restore()
+      const texture = canvasTexture(canvas)
+      this.generatedTextures.push(texture)
+      const sprite = new Sprite(texture)
+      sprite.position.set(cameraX, cameraY)
+      sprite.zIndex = (building.y + building.h) * TS - 1
+      this.world.addChild(sprite)
+    }
   }
 
   private addTownProps(town: (typeof TOWNS)[number]) {

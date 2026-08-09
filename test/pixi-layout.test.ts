@@ -33,7 +33,7 @@ describe('Pixi full-screen layout', () => {
     expect(mob.x).toBeLessThanOrEqual(visibleRight)
   })
 
-  it('fills portrait town and cave height with detailed tiles', () => {
+  it('keeps portrait town and cave tiles dense instead of fitting the entire map', () => {
     const townTile = explorationTileSize({
       viewportWidth: 390,
       viewportHeight: 844,
@@ -48,10 +48,31 @@ describe('Pixi full-screen layout', () => {
       mapHeight: 17,
       kind: 'cave'
     })
-    expect(townTile * 26).toBeGreaterThanOrEqual(844)
-    expect(caveTile * 17).toBeGreaterThanOrEqual(844)
-    expect(townTile).toBe(33)
-    expect(caveTile).toBe(50)
+    expect(townTile).toBe(38)
+    expect(caveTile).toBe(40)
+    expect(townTile).toBeLessThanOrEqual(40)
+    expect(caveTile).toBeLessThanOrEqual(40)
+  })
+
+  it('caps large-screen exploration tiles so the source pixels stay dense', () => {
+    expect(
+      explorationTileSize({
+        viewportWidth: 3840,
+        viewportHeight: 2160,
+        mapWidth: 44,
+        mapHeight: 26,
+        kind: 'town'
+      })
+    ).toBe(40)
+    expect(
+      explorationTileSize({
+        viewportWidth: 3840,
+        viewportHeight: 2160,
+        mapWidth: 20,
+        mapHeight: 15,
+        kind: 'room'
+      })
+    ).toBe(44)
   })
 
   it('keeps the overworld dense while showing a useful mobile radius', () => {

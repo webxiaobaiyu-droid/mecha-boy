@@ -59,6 +59,7 @@ function makeCanvas(width: number, height: number) {
 
 export function invalidateMap(mapId: string) {
   bakedMaps.delete(mapId)
+  bakedMaps.delete(`${mapId}:ground`)
 }
 
 export function buildTownGrid(town: (typeof TOWNS)[number]): TownGrid {
@@ -194,7 +195,7 @@ function bakeWorld(): HTMLCanvasElement {
   return canvas
 }
 
-function bakeTown(town: (typeof TOWNS)[number]): HTMLCanvasElement {
+function bakeTown(town: (typeof TOWNS)[number], includeStructures: boolean): HTMLCanvasElement {
   const [width, height] = town.size
   const grid = buildTownGrid(town).map
   const { canvas, context } = makeCanvas(width * TS, height * TS)
@@ -207,8 +208,10 @@ function bakeTown(town: (typeof TOWNS)[number]): HTMLCanvasElement {
       )
     }
   }
-  for (const building of town.buildings) {
-    drawBuilding(context, building, hash(building.x, building.y, 202), town.id)
+  if (includeStructures) {
+    for (const building of town.buildings) {
+      drawBuilding(context, building, hash(building.x, building.y, 202), town.id)
+    }
   }
   for (const decor of [...townDecor(town), ...(town.decor || [])]) {
     if (!DECOR_BLOCK.has(decor.t)) {
@@ -257,8 +260,13 @@ function bakeRoom(room: RoomDef): HTMLCanvasElement {
   return canvas
 }
 
-export function bakeMap(mapId: string): HTMLCanvasElement {
-  const cached = bakedMaps.get(mapId)
+export function bakeMap(
+  mapId: string,
+  options: { includeStructures?: boolean } = {}
+): HTMLCanvasElement {
+  const includeStructures = options.includeStructures !== false
+  const cacheKey = includeStructures ? mapId : `${mapId}:ground`
+  const cached = bakedMaps.get(cacheKey)
   if (cached) return cached
   const town = TOWNS.find((item) => item.id === mapId)
   const cave = CAVES.find((item) => item.id === mapId)
@@ -267,12 +275,12 @@ export function bakeMap(mapId: string): HTMLCanvasElement {
     mapId === 'world'
       ? bakeWorld()
       : town
-        ? bakeTown(town)
+        ? bakeTown(town, includeStructures)
         : cave
           ? bakeCave(cave)
           : room
             ? bakeRoom(room)
             : makeCanvas(FALLBACK_VIEW_WIDTH * TS, FALLBACK_VIEW_HEIGHT * TS).canvas
-  bakedMaps.set(mapId, canvas)
+  bakedMaps.set(cacheKey, canvas)
   return canvas
 }

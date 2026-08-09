@@ -1,10 +1,11 @@
-import { Application, Graphics } from 'pixi.js'
+import { Application, Graphics, Rectangle } from 'pixi.js'
 import type { GameState } from '@/game/types'
 import { ExplorationScene } from '@/game/pixi/ExplorationScene'
 import { BattleScene } from '@/game/pixi/BattleScene'
 import { WeatherLayer, type WeatherPresentation } from '@/game/pixi/WeatherLayer'
 import { pixiAssets } from '@/game/pixi/assets'
 import { preloadGameAssets } from '@/game/assets'
+import { GameUiScene } from '@/game/pixi/GameUiScene'
 
 export class PixiGameRenderer {
   private app = new Application()
@@ -12,6 +13,7 @@ export class PixiGameRenderer {
   private exploration = new ExplorationScene()
   private battle = new BattleScene()
   private weather = new WeatherLayer()
+  private ui = new GameUiScene()
   private width = 0
   private height = 0
   private initialized = false
@@ -30,8 +32,8 @@ export class PixiGameRenderer {
       autoStart: false
     })
     this.app.stop()
-    this.app.stage.eventMode = 'none'
-    this.app.stage.addChild(this.background, this.exploration, this.battle, this.weather)
+    this.app.stage.eventMode = 'static'
+    this.app.stage.addChild(this.background, this.exploration, this.battle, this.weather, this.ui)
     await Promise.all([preloadGameAssets(), pixiAssets.preload()])
     this.resize(true)
     this.initialized = true
@@ -53,6 +55,7 @@ export class PixiGameRenderer {
 
     this.weather.visible = battleActive || this.exploration.visible
     if (this.weather.visible) this.weather.update(state, presentation, dt)
+    this.ui.update(state)
     this.app.render()
   }
 
@@ -69,8 +72,10 @@ export class PixiGameRenderer {
     this.width = width
     this.height = height
     this.background.clear().rect(0, 0, width, height).fill(0x05070a)
+    this.app.stage.hitArea = new Rectangle(0, 0, width, height)
     this.exploration.resize(width, height)
     this.battle.resize(width, height)
     this.weather.resize(width, height)
+    this.ui.resize(width, height)
   }
 }

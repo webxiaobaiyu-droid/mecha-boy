@@ -1049,8 +1049,19 @@ export function drawBuilding(
   const pal = buildingPal(b, h)
   const roofH = b.h <= 3 ? 36 : 48
   const frontier = townId === 'rado'
-  // 建筑投影让立面从地表中抬起来，同时保留脚底碰撞位置。
-  P(ctx, x0 + 8, y0 + 12, w + 4, hh - 1, 'rgba(24,24,20,0.28)')
+  const sideDepth = 9 + Math.floor(h * 8)
+  // 东南向长投影和接地暗部把建筑从地表中抬起，同时保留脚底碰撞位置。
+  fill(
+    ctx,
+    [
+      [x0 + 8, y0 + 13],
+      [x0 + w + sideDepth + 10, y0 + 24],
+      [x0 + w + sideDepth + 10, y0 + hh + 12],
+      [x0 + 10, y0 + hh + 6]
+    ],
+    'rgba(18,20,18,0.22)'
+  )
+  P(ctx, x0 + 5, y0 + hh - 2, w + sideDepth + 7, 10, 'rgba(20,20,18,0.34)')
   // 屋顶
   fill(
     ctx,
@@ -1074,6 +1085,10 @@ export function drawBuilding(
     ],
     pal.roof
   )
+  // 屋檐下缘和高光脊线形成清楚的厚度，不让屋顶像贴在墙上的色块。
+  P(ctx, x0 - 5, y0 + roofH - 2, w + 10, 6, '#332b2a')
+  P(ctx, x0 - 3, y0 + roofH - 2, w + 6, 2, pal.trim)
+  P(ctx, x0 + w / 2 - 2, y0, 4, roofH - 5, 'rgba(240,220,170,0.18)')
   P(ctx, x0 + w / 2 - 1, y0 - 3, 2, 8, '#2c2020')
   // 屋瓦横线
   for (let i = 1; i < roofH / 6; i++) {
@@ -1109,9 +1124,24 @@ export function drawBuilding(
   // 墙体
   P(ctx, x0, y0 + roofH, w, hh - roofH, pal.wallDK)
   P(ctx, x0 + 1, y0 + roofH + 1, w - 2, hh - roofH - 2, pal.wall)
+  // 右侧墙面使用更暗的透视面，并把屋檐和地基一起向外推出。
+  fill(
+    ctx,
+    [
+      [x0 + w, y0 + roofH],
+      [x0 + w + sideDepth, y0 + roofH + 6],
+      [x0 + w + sideDepth, y0 + hh + 4],
+      [x0 + w, y0 + hh]
+    ],
+    pal.wallDK
+  )
+  P(ctx, x0 + w + 2, y0 + roofH + 10, sideDepth - 3, 2, pal.trim)
+  P(ctx, x0 + w + sideDepth - 3, y0 + roofH + 7, 2, hh - roofH - 7, '#51493f')
   // 底部收边
   P(ctx, x0, y0 + hh - 5, w, 5, pal.wallDK)
   P(ctx, x0, y0 + hh - 2, w, 2, pal.trim)
+  P(ctx, x0 - 3, y0 + hh, w + sideDepth + 6, 4, '#4d4b45')
+  P(ctx, x0 - 1, y0 + hh, w + sideDepth + 2, 1, '#8f8c7f')
   // 墙线
   for (let i = 1; i < 3; i++) {
     const yy = y0 + roofH + i * ((hh - roofH) / 3)
@@ -1140,6 +1170,10 @@ export function drawBuilding(
   const dpx = dx * TS,
     dpy = dy * TS
   P(ctx, dpx + 5, dpy - 4, 22, 4, pal.trim)
+  P(ctx, dpx + 1, dpy - 10, 30, 5, '#332c2b')
+  P(ctx, dpx + 3, dpy - 9, 26, 2, pal.accent)
+  P(ctx, dpx + 4, dpy - 5, 3, 6, pal.trim)
+  P(ctx, dpx + 25, dpy - 5, 3, 6, pal.trim)
   P(ctx, dpx + 7, dpy, 18, 26, C.frame)
   P(ctx, dpx + 9, dpy + 2, 14, 24, C.door)
   P(ctx, dpx + 9, dpy + 2, 14, 3, C.doorDK)
@@ -1160,6 +1194,8 @@ export function drawBuilding(
     for (const wx of [b.x + 1, b.x + b.w - 2]) {
       const wpx = wx * TS
       P(ctx, wpx + 7, winY, 18, 14, C.win)
+      P(ctx, wpx + 5, winY - 3, 22, 4, '#3d3935')
+      P(ctx, wpx + 5, winY + 14, 22, 5, '#4a4741')
       P(ctx, wpx + 7, winY, 18, 3, C.winLt)
       P(ctx, wpx + 15, winY, 2, 14, '#1a2448')
       P(ctx, wpx + 7, winY + 6, 18, 1, '#1a2448')

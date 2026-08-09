@@ -26,8 +26,8 @@ export class WeatherLayer extends Container {
   private headlight = new Sprite(createRadialTexture())
   private particles = new Container()
   private pool: Particle[] = []
-  private width = 1
-  private height = 1
+  private viewportWidth = 1
+  private viewportHeight = 1
 
   constructor() {
     super()
@@ -53,8 +53,8 @@ export class WeatherLayer extends Container {
   }
 
   resize(width: number, height: number) {
-    this.width = Math.max(1, width)
-    this.height = Math.max(1, height)
+    this.viewportWidth = Math.max(1, width)
+    this.viewportHeight = Math.max(1, height)
   }
 
   update(state: GameState, presentation: WeatherPresentation, dt: number) {
@@ -64,14 +64,14 @@ export class WeatherLayer extends Container {
 
     this.shade
       .clear()
-      .rect(0, 0, this.width, this.height)
+      .rect(0, 0, this.viewportWidth, this.viewportHeight)
       .fill({
         color: outdoors ? 0x071329 : 0x071018,
         alpha: darkness
       })
     this.warmth.clear()
     if (outdoors && daylight.warmth > 0.01) {
-      this.warmth.rect(0, 0, this.width, this.height).fill({
+      this.warmth.rect(0, 0, this.viewportWidth, this.viewportHeight).fill({
         color: 0xd96f3f,
         alpha: daylight.warmth * 0.14
       })
@@ -79,7 +79,7 @@ export class WeatherLayer extends Container {
 
     this.headlight.visible = darkness > 0.22
     this.headlight.position.set(presentation.focusX, presentation.focusY)
-    const lightScale = clamp(Math.min(this.width, this.height) / 430, 1.2, 2.8)
+    const lightScale = clamp(Math.min(this.viewportWidth, this.viewportHeight) / 430, 1.2, 2.8)
     this.headlight.scale.set(lightScale * 1.45, lightScale)
     this.headlight.alpha = clamp(darkness * 1.15, 0, 0.72)
 
@@ -101,12 +101,12 @@ export class WeatherLayer extends Container {
       if (rain) {
         particle.x += (wind * 190 + particle.drift * 28) * dt
         particle.y += (530 + particle.speed * 430) * dt
-        if (particle.y > this.height + 30) {
+        if (particle.y > this.viewportHeight + 30) {
           particle.y = -30 - particle.seed * 90
-          particle.x = (particle.x + particle.seed * this.width * 0.73) % this.width
+          particle.x = (particle.x + particle.seed * this.viewportWidth * 0.73) % this.viewportWidth
         }
-        if (particle.x > this.width + 40) particle.x -= this.width + 80
-        if (particle.x < -40) particle.x += this.width + 80
+        if (particle.x > this.viewportWidth + 40) particle.x -= this.viewportWidth + 80
+        if (particle.x < -40) particle.x += this.viewportWidth + 80
         sprite.position.set(particle.x, particle.y)
         sprite.width = 1 + intensity * 1.4
         sprite.height = 10 + particle.speed * 18
@@ -116,9 +116,10 @@ export class WeatherLayer extends Container {
       } else {
         particle.x += (110 + Math.abs(wind) * 260 + particle.speed * 60) * Math.sign(wind || 1) * dt
         particle.y += Math.sin(state.playtime * 1.7 + particle.seed * 12) * 12 * dt
-        if (particle.x > this.width + 30) particle.x = -30
-        if (particle.x < -30) particle.x = this.width + 30
-        particle.y = ((particle.y % this.height) + this.height) % this.height
+        if (particle.x > this.viewportWidth + 30) particle.x = -30
+        if (particle.x < -30) particle.x = this.viewportWidth + 30
+        particle.y =
+          ((particle.y % this.viewportHeight) + this.viewportHeight) % this.viewportHeight
         sprite.position.set(particle.x, particle.y)
         sprite.width = 3 + particle.speed * 6
         sprite.height = 1 + particle.seed * 2
@@ -134,7 +135,7 @@ export class WeatherLayer extends Container {
         : 0
     this.flash.clear()
     if (stormPulse > 0) {
-      this.flash.rect(0, 0, this.width, this.height).fill({
+      this.flash.rect(0, 0, this.viewportWidth, this.viewportHeight).fill({
         color: 0xdde8ff,
         alpha: Math.min(0.62, stormPulse * intensity * 0.7)
       })

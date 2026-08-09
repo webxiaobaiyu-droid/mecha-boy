@@ -55,7 +55,7 @@ export class BattleScene extends Container {
   private content = new Container()
   private background = new Container()
   private combatants = new Container()
-  private effects = new Container()
+  private effectLayer = new Container()
   private foreground = new Container()
   private environmentKey = ''
   private gradients = new Map<BattleEnvironment, Texture>()
@@ -70,7 +70,7 @@ export class BattleScene extends Container {
     this.eventMode = 'none'
     this.combatants.sortableChildren = true
     this.addChild(this.letterbox)
-    this.content.addChild(this.background, this.combatants, this.effects, this.foreground)
+    this.content.addChild(this.background, this.combatants, this.effectLayer, this.foreground)
     this.addChild(this.content)
   }
 
@@ -646,7 +646,7 @@ export class BattleScene extends Container {
   }
 
   private drawEffect(effect: BattleEffect | null, battle: BattleState) {
-    for (const child of this.effects.removeChildren()) child.destroy({ children: true })
+    for (const child of this.effectLayer.removeChildren()) child.destroy({ children: true })
     if (!effect) return
     const progress = clamp(effect.elapsed / Math.max(0.001, effect.duration), 0, 1)
     const source = this.effectPoint(battle, effect.fromX, effect.fromY, 'source')
@@ -681,7 +681,7 @@ export class BattleScene extends Container {
         })
         .circle(x, y, effect.weaponKind === 'main' ? 8 : 5)
         .fill(0xfff2c2)
-      this.effects.addChild(trail)
+      this.effectLayer.addChild(trail)
     }
     if (progress > 0.58) {
       const blastProgress = clamp((progress - 0.58) / 0.42, 0, 1)
@@ -696,7 +696,7 @@ export class BattleScene extends Container {
       blast.scale.set(effect.dmg > 180 ? 4.2 : 3)
       blast.alpha = effect.hit ? 1 : 0.62
       blast.blendMode = 'add'
-      this.effects.addChild(blast)
+      this.effectLayer.addChild(blast)
       if (effect.hit && effect.dmg > 0) {
         const damage = new Text({
           text: String(effect.dmg),
@@ -711,7 +711,7 @@ export class BattleScene extends Container {
         damage.anchor.set(0.5)
         damage.position.set(toX, toY - 78 - blastProgress * 40)
         damage.alpha = 1 - blastProgress * 0.45
-        this.effects.addChild(damage)
+        this.effectLayer.addChild(damage)
       }
     }
     if (progress < 0.2) {
@@ -720,7 +720,7 @@ export class BattleScene extends Container {
       flash.position.set(fromX, fromY)
       flash.scale.set(1.2 + (0.2 - progress) * 3)
       flash.blendMode = 'add'
-      this.effects.addChild(flash)
+      this.effectLayer.addChild(flash)
     }
   }
 }

@@ -1,4 +1,4 @@
-/* Pixi 场景铺满视口，Vue UI 保持 640×480 安全坐标并独立缩放。 */
+/* Pixi 场景与交互层共同铺满真实视口。 */
 
 .game-viewport {
   position: fixed;
@@ -6,31 +6,4 @@
   overflow: hidden;
   background: #05070a;
   isolation: isolate;
-}
-
-.ui-safe {
-  position: absolute;
-  left: var(--ui-x);
-  top: var(--ui-y);
-  z-index: 20;
-  width: 640px;
-  height: 480px;
-  overflow: visible;
-  transform: scale(var(--ui-scale));
-  transform-origin: top left;
-  pointer-events: none;
-}
-
-.ui-safe > * {
-  pointer-events: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ui-safe *,
-  .ui-safe *::before,
-  .ui-safe *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
 }

@@ -68,14 +68,10 @@ export function explorationTileSize(input: ExplorationTileLayoutInput): number {
     return narrow ? clamp(Math.floor(width / 14), 22, 32) : 32
   }
   if (input.kind === 'room') {
-    const fittedWidth = Math.floor(width / (input.mapWidth + 2))
-    const fittedHeight = Math.ceil(height / input.mapHeight)
-    return clamp(Math.max(fittedWidth, fittedHeight), narrow ? 24 : 32, 56)
+    return clamp(Math.floor(height / (narrow ? 18 : 20)), narrow ? 28 : 32, narrow ? 40 : 44)
   }
   if (input.kind === 'cave') {
-    const fittedHeight = Math.ceil(height / input.mapHeight)
-    return clamp(Math.max(narrow ? 28 : 36, fittedHeight), narrow ? 28 : 36, 56)
+    return clamp(Math.floor(height / (narrow ? 18 : 20)), narrow ? 28 : 32, narrow ? 40 : 44)
   }
-  const fittedHeight = Math.ceil(height / input.mapHeight)
-  return clamp(Math.max(narrow ? 28 : 34, fittedHeight), narrow ? 28 : 48, 56)
+  return clamp(Math.floor(height / (narrow ? 21 : 22)), narrow ? 28 : 32, narrow ? 38 : 40)
 }
