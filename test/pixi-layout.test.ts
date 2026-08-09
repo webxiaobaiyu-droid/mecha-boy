@@ -5,7 +5,8 @@ import {
   battleFighterAnchor,
   battleMobAnchor,
   battleViewportLayout,
-  explorationTileSize
+  explorationTileSize,
+  townBackdropMarginTiles
 } from '../src/game/pixi/layout'
 
 describe('Pixi full-screen layout', () => {
@@ -73,6 +74,16 @@ describe('Pixi full-screen layout', () => {
         kind: 'room'
       })
     ).toBe(44)
+  })
+
+  it('extends town ground far enough to cover ultrawide viewports without edge seams', () => {
+    const viewportWidth = 3840
+    const townWidth = 44
+    const tilePixels = 40
+    const margin = townBackdropMarginTiles(viewportWidth, townWidth, tilePixels)
+
+    expect(margin).toBe(28)
+    expect((townWidth + margin * 2) * tilePixels).toBeGreaterThanOrEqual(viewportWidth)
   })
 
   it('keeps the overworld dense while showing a useful mobile radius', () => {

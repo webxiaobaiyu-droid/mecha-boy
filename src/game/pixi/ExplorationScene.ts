@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js'
+import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { ACTOR_ASSETS } from '@/game/assets'
 import { TANKS as TANK_DEFS } from '@/game/data/equipment'
 import { CAVES, ROOMS, TOWNS, WORLD_H, WORLD_W } from '@/game/data/maps'
@@ -10,10 +10,9 @@ import {
   drawFurniture,
   drawTownTile,
   hash,
-  neighbors,
   townDecor
 } from '@/game/engine/tileart'
-import { bakeMap } from '@/game/engine/map-baker'
+import { bakeMap, TOWN_GROUND_SEED } from '@/game/engine/map-baker'
 import { overworldTankVisualFor } from '@/game/assets/tanks'
 import type { GameState, RoomDef, TankState } from '@/game/types'
 import { WORLD_GATES, worldGateUnlocked } from '@/game/systems/world-gates'
@@ -28,7 +27,11 @@ import {
   movingPosition
 } from '@/game/pixi/helpers'
 import type { WeatherPresentation } from '@/game/pixi/WeatherLayer'
-import { explorationTileSize, type ExplorationMapKind } from '@/game/pixi/layout'
+import {
+  explorationTileSize,
+  townBackdropMarginTiles,
+  type ExplorationMapKind
+} from '@/game/pixi/layout'
 
 const EXPLORATION_SCREENS = new Set(['world', 'town', 'cave', 'room', 'menu', 'shop', 'password'])
 
@@ -100,7 +103,7 @@ export class ExplorationScene extends Container {
   private player = new Sprite(Texture.EMPTY)
   private playerTank = new TankActor()
   private gateLayer = new Container()
-  private townBackdrop: TilingSprite | null = null
+  private townBackdrop: Sprite | null = null
   private gateGraphics = new Map<string, Graphics>()
   private mapTextures = new Map<string, Texture>()
   private generatedTextures: Texture[] = []
@@ -127,8 +130,10 @@ export class ExplorationScene extends Container {
   }
 
   resize(width: number, height: number) {
+    const changed = width !== this.screenWidth || height !== this.screenHeight
     this.screenWidth = Math.max(1, width)
     this.screenHeight = Math.max(1, height)
+    if (changed && this.townBackdrop) this.sceneKey = ''
     this.paintBackdrop()
   }
 
@@ -175,7 +180,6 @@ export class ExplorationScene extends Container {
       this.cameraY += (targetCameraY - this.cameraY) * ease
     }
     this.world.position.set(Math.round(-this.cameraX), Math.round(-this.cameraY))
-    this.updateTownBackdrop(scale)
 
     const outdoors = state.map === 'world' || TOWNS.some((town) => town.id === state.map)
     return {
@@ -257,38 +261,48 @@ export class ExplorationScene extends Container {
   }
 
   private addTownBackdrop(town: (typeof TOWNS)[number]) {
-    const cacheKey = `${town.id}:backdrop`
-    let texture = this.mapTextures.get(cacheKey)
-    if (!texture) {
-      const patternSize = 4
-      const grid = Array.from({ length: patternSize }, () => ' '.repeat(patternSize))
-      const { canvas, context } = createCanvas(patternSize * TS, patternSize * TS)
-      for (let y = 0; y < patternSize; y++) {
-        for (let x = 0; x < patternSize; x++) {
-          drawTownTile(
-            { ctx: context, x, y, h: hash(x, y, 991), n: neighbors(grid, x, y) },
-            ' ',
-            town
-          )
-        }
-      }
-      texture = canvasTexture(canvas)
-      this.mapTextures.set(cacheKey, texture)
+    const [townWidth, townHeight] = town.size
+    const tilePixels = this.tileSize(town.id)
+    const marginX = townBackdropMarginTiles(this.screenWidth, townWidth, tilePixels)
+    const marginY = townBackdropMarginTiles(this.screenHeight, townHeight, tilePixels)
+    const { canvas, context } = createCanvas(
+      (townWidth + marginX * 2) * TS,
+      (townHeight + marginY * 2) * TS
+    )
+    const emptyNeighbors = {
+      N: ' ',
+      S: ' ',
+      E: ' ',
+      W: ' ',
+      NE: ' ',
+      NW: ' ',
+      SE: ' ',
+      SW: ' '
     }
-    this.townBackdrop = new TilingSprite({ texture, width: TS, height: TS })
+    context.save()
+    context.translate(marginX * TS, marginY * TS)
+    for (let y = -marginY; y < townHeight + marginY; y++) {
+      for (let x = -marginX; x < townWidth + marginX; x++) {
+        drawTownTile(
+          {
+            ctx: context,
+            x,
+            y,
+            h: hash(x, y, TOWN_GROUND_SEED),
+            n: emptyNeighbors
+          },
+          ' ',
+          town
+        )
+      }
+    }
+    context.restore()
+    const texture = canvasTexture(canvas)
+    this.generatedTextures.push(texture)
+    this.townBackdrop = new Sprite(texture)
+    this.townBackdrop.position.set(-marginX * TS, -marginY * TS)
     this.townBackdrop.zIndex = -10
     this.world.addChild(this.townBackdrop)
-  }
-
-  private updateTownBackdrop(scale: number) {
-    if (!this.townBackdrop) return
-    const padding = TS * 2
-    const x = this.cameraX / scale - padding
-    const y = this.cameraY / scale - padding
-    this.townBackdrop.position.set(x, y)
-    this.townBackdrop.width = this.screenWidth / scale + padding * 2
-    this.townBackdrop.height = this.screenHeight / scale + padding * 2
-    this.townBackdrop.tilePosition.set(x, y)
   }
 
   private addNpc(npc: { x: number; y: number; sp: string }) {

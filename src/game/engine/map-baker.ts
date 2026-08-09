@@ -18,6 +18,7 @@ import {
 
 const FALLBACK_VIEW_WIDTH = 20
 const FALLBACK_VIEW_HEIGHT = 15
+export const TOWN_GROUND_SEED = 101
 
 export const DYNAMIC_ROOM_ENTITY_TYPES = new Set([
   'workbench',
@@ -202,7 +203,7 @@ function bakeTown(town: (typeof TOWNS)[number], includeStructures: boolean): HTM
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       drawTownTile(
-        { ctx: context, x, y, h: hash(x, y, 101), n: neighbors(grid, x, y) },
+        { ctx: context, x, y, h: hash(x, y, TOWN_GROUND_SEED), n: neighbors(grid, x, y) },
         grid[y][x],
         town
       )

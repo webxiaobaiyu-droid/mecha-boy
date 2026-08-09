@@ -75,3 +75,15 @@ export function explorationTileSize(input: ExplorationTileLayoutInput): number {
   }
   return clamp(Math.floor(height / (narrow ? 21 : 22)), narrow ? 28 : 32, narrow ? 38 : 40)
 }
+
+export function townBackdropMarginTiles(
+  viewportPixels: number,
+  mapTiles: number,
+  tilePixels: number
+): number {
+  const safeViewport = Math.max(1, Number.isFinite(viewportPixels) ? viewportPixels : 1)
+  const safeMapTiles = Math.max(1, Number.isFinite(mapTiles) ? mapTiles : 1)
+  const safeTilePixels = Math.max(1, Number.isFinite(tilePixels) ? tilePixels : 1)
+  const uncoveredTiles = Math.max(0, safeViewport / safeTilePixels - safeMapTiles)
+  return Math.max(2, Math.ceil(uncoveredTiles / 2) + 2)
+}
