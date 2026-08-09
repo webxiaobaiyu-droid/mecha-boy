@@ -1,5 +1,5 @@
-/* Canvas 渲染器：把地图预烘焙到离屏画布，再按相机区域快速贴片；
-   场景（世界/城镇/洞窟/室内/战斗）在此绘制。 */
+/* Legacy Canvas 离线预览渲染器。
+   正式游戏循环使用 src/game/pixi；此模块仅保留 PNG 预览与旧视觉契约测试。 */
 
 import { PAL, SPR, ETPL, TTPL } from '@/game/data/sprites'
 import { WORLD, WORLD_W, WORLD_H, TOWNS, CAVES, ROOMS } from '@/game/data/maps'

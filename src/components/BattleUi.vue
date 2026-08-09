@@ -154,8 +154,8 @@ function fighterStatusClass(fighter: BattleFighter) {
 }
 .cmd-zone {
   position: absolute;
-  right: 2%;
-  top: 20%;
+  left: 32%;
+  top: 3%;
   pointer-events: auto;
 }
 .weapon-help {

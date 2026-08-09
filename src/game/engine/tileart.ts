@@ -391,7 +391,7 @@ function checkpointTile(g: TileGfx) {
   const px = x * TS,
     py = y * TS
   roadTile(g)
-  // 两侧岗亭永久保留；动态栏杆由 renderer 根据存档状态叠加。
+  // 两侧岗亭永久保留；动态栏杆由 Pixi 实体层根据存档状态叠加。
   P(ctx, px + 1, py + 5, 8, 22, '#343b3d')
   P(ctx, px + 2, py + 6, 6, 19, '#586062')
   P(ctx, px + 3, py + 8, 4, 5, '#91a3a0')

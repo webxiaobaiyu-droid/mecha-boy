@@ -10,7 +10,7 @@ import {
   WORLD_TOWN_POSITIONS,
   WORLD_W
 } from '../src/game/data/maps'
-import { buildRoomGrid, buildTownGrid, roomGrids, townGrids } from '../src/game/engine/renderer'
+import { buildRoomGrid, buildTownGrid, roomGrids, townGrids } from '../src/game/engine/map-baker'
 
 type Point = [number, number]
 

@@ -1,70 +1,36 @@
-/* 640x480 逻辑舞台连续等比缩放：Canvas 与 DOM UI 永远共享同一坐标系。 */
+/* Pixi 场景铺满视口，Vue UI 保持 640×480 安全坐标并独立缩放。 */
 
 .game-viewport {
   position: fixed;
-  inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
-    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  inset: 0;
   overflow: hidden;
-  background: var(--bg);
+  background: #05070a;
   isolation: isolate;
 }
 
-.game-shell {
+.ui-safe {
   position: absolute;
-  left: var(--shell-x);
-  top: var(--shell-y);
-  width: var(--shell-width);
-  height: var(--shell-height);
-}
-
-.stage-viewport {
-  position: absolute;
-  left: var(--stage-x);
-  top: var(--stage-y);
-  width: var(--stage-width);
-  height: var(--stage-height);
-  overflow: hidden;
-  background: #000;
-  box-shadow:
-    0 0 0 1px rgba(9, 8, 8, 0.92),
-    0 0 0 3px rgba(188, 162, 102, 0.72),
-    0 8px 24px rgba(0, 0, 0, 0.48);
-  touch-action: none;
-}
-
-.stage-viewport::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 2px solid rgba(236, 216, 164, 0.26);
-  box-shadow: inset 0 0 0 2px rgba(8, 8, 12, 0.52);
-  pointer-events: none;
-  z-index: 100;
-}
-
-.stage {
-  position: absolute;
-  inset: 0 auto auto 0;
+  left: var(--ui-x);
+  top: var(--ui-y);
+  z-index: 20;
   width: 640px;
   height: 480px;
-  overflow: hidden;
-  transform: scale(var(--stage-scale));
+  overflow: visible;
+  transform: scale(var(--ui-scale));
   transform-origin: top left;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
+  pointer-events: none;
 }
 
-.ui-layer {
-  position: absolute;
-  inset: 0 auto auto 0;
-  width: 640px;
-  height: 480px;
+.ui-safe > * {
+  pointer-events: auto;
 }
 
-@media (max-width: 640px), (max-height: 480px) {
-  .stage-viewport {
-    box-shadow:
-      0 0 0 1px rgba(188, 162, 102, 0.68),
-      0 4px 14px rgba(0, 0, 0, 0.42);
+@media (prefers-reduced-motion: reduce) {
+  .ui-safe *,
+  .ui-safe *::before,
+  .ui-safe *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

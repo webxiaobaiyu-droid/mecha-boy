@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onUnmounted } from 'vue'
 import * as input from '@/game/engine/input'
-import type { TouchPlacement } from '@/ui/stageLayout'
+import type { TouchPlacement } from '@/ui/viewportLayout'
 
 defineProps<{ placement: TouchPlacement }>()
 
@@ -110,11 +110,8 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .touch-controls {
-  position: absolute;
-  left: 0;
+  position: fixed;
   display: flex;
-  width: var(--shell-width);
-  height: var(--controls-height);
   justify-content: space-between;
   align-items: center;
   z-index: 40;
@@ -123,12 +120,18 @@ onUnmounted(() => {
 }
 
 .touch-controls[data-placement='below'] {
-  top: calc(var(--stage-height) + var(--stage-control-gap));
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  left: max(10px, env(safe-area-inset-left));
+  height: calc(var(--control-size) * 2 + var(--control-gap));
 }
 
 .touch-controls[data-placement='sides'] {
-  top: 0;
-  height: var(--stage-height);
+  top: 50%;
+  right: max(10px, env(safe-area-inset-right));
+  left: max(10px, env(safe-area-inset-left));
+  height: calc(var(--control-size) * 2 + var(--control-gap));
+  transform: translateY(-50%);
 }
 
 .direction-pad {

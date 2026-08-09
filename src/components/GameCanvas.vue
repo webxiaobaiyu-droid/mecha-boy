@@ -1,91 +1,111 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { store } from '@/game/core/store'
-import {
-  bindCanvas,
-  drawBattleScene,
-  drawScene,
-  clear,
-  text,
-  setPresentationScale
-} from '@/game/engine/renderer'
-import { preloadGameAssets } from '@/game/assets'
+import { PixiGameRenderer } from '@/game/pixi/PixiGameRenderer'
 import { TOWNS } from '@/game/data/maps'
 import * as audio from '@/game/audio/audio'
 import { weatherVisualIntensity } from '@/game/systems/environment'
 
-const props = defineProps<{ presentationScale: number }>()
+const host = ref<HTMLDivElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
+const loading = ref(true)
+const loadError = ref(false)
+let renderer: PixiGameRenderer | null = null
 let raf = 0
 let last = 0
 let mounted = true
 
-watch(
-  () => props.presentationScale,
-  (scale) => setPresentationScale(scale),
-  { immediate: true }
-)
-
-function frame(t: number) {
-  const dt = Math.min(0.05, (t - last) / 1000 || 0.016)
-  last = t
+function frame(time: number) {
+  const dt = Math.min(0.05, (time - last) / 1000 || 0.016)
+  last = time
   store.update(dt)
-  const s = store.state
-  if (s.screen === 'battle') drawBattleScene(s)
-  else if (['world', 'town', 'cave', 'room', 'menu', 'shop', 'password'].includes(s.screen))
-    drawScene(s)
-  else clear('#05050a')
+  renderer?.update(store.state, dt)
+  const state = store.state
   const outdoors =
-    ['world', 'town', 'battle', 'menu', 'shop', 'password'].includes(s.screen) &&
-    (s.map === 'world' || TOWNS.some((town) => town.id === s.map))
+    ['world', 'town', 'battle', 'menu', 'shop', 'password'].includes(state.screen) &&
+    (state.map === 'world' || TOWNS.some((town) => town.id === state.map))
   audio.setWeatherAmbience(
-    outdoors ? s.environment.weather : null,
-    outdoors ? weatherVisualIntensity(s.environment) : 0
+    outdoors ? state.environment.weather : null,
+    outdoors ? weatherVisualIntensity(state.environment) : 0
   )
   raf = requestAnimationFrame(frame)
 }
 
 onMounted(async () => {
-  if (canvas.value) {
-    bindCanvas(canvas.value)
-    clear('#05050a')
-    text('正在装载荒野资源...', 320, 224, '#d8c06a', 16, 'center', true)
-    try {
-      await preloadGameAssets()
-      if (!mounted) return
-      store.boot()
-      last = performance.now()
-      raf = requestAnimationFrame(frame)
-    } catch (error) {
-      console.error('Game asset preload failed', error)
-      clear('#140d0d')
-      text('资源装载失败', 320, 216, '#ef7267', 18, 'center', true)
-      text('请刷新页面重试', 320, 248, '#d8d0c0', 13, 'center')
-    }
+  if (!canvas.value || !host.value) return
+  renderer = new PixiGameRenderer()
+  try {
+    await renderer.init(canvas.value, host.value)
+    if (!mounted) return
+    store.boot()
+    loading.value = false
+    last = performance.now()
+    raf = requestAnimationFrame(frame)
+  } catch (error) {
+    console.error('Pixi game renderer failed to initialize', error)
+    loadError.value = true
+    loading.value = false
   }
 })
 
 onUnmounted(() => {
   mounted = false
   cancelAnimationFrame(raf)
+  renderer?.destroy()
+  renderer = null
   audio.setWeatherAmbience(null)
 })
 </script>
 
 <template>
-  <canvas ref="canvas" width="640" height="480" class="game-canvas"></canvas>
+  <div ref="host" class="pixi-host">
+    <canvas ref="canvas" class="game-canvas"></canvas>
+    <div v-if="loading" class="renderer-status">正在装载荒野资源...</div>
+    <div v-else-if="loadError" class="renderer-status error">
+      <strong>图形引擎启动失败</strong>
+      <span>请确认浏览器已启用 WebGL，然后刷新页面</span>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
+.pixi-host,
 .game-canvas {
   position: absolute;
   inset: 0;
-  display: block;
-  width: 640px;
-  height: 480px;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
-  background: #000;
+  width: 100%;
+  height: 100%;
+}
+
+.pixi-host {
+  overflow: hidden;
+  background: #05070a;
   touch-action: none;
+}
+
+.game-canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.renderer-status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  background: #070a0d;
+  color: #d8c06a;
+  font-size: 14px;
+  text-align: center;
+}
+
+.renderer-status.error {
+  color: #ef7267;
+}
+
+.renderer-status span {
+  color: #d8d0c0;
+  font-size: 12px;
 }
 </style>

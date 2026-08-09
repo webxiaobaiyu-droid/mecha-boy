@@ -5,7 +5,7 @@ import { store } from '../src/game/core/store'
 import * as input from '../src/game/engine/input'
 import * as audio from '../src/game/audio/audio'
 import { DATA } from './test-data'
-import { buildCaveGrid, buildRoomGrid, buildTownGrid } from '../src/game/engine/renderer'
+import { buildCaveGrid, buildRoomGrid, buildTownGrid } from '../src/game/engine/map-baker'
 import { WORLD_CAVE_POSITIONS, WORLD_H, WORLD_TOWN_POSITIONS, WORLD_W } from '../src/game/data/maps'
 import actorAtlas from '../src/assets/game/actors-common.json'
 

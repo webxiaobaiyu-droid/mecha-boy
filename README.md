@@ -2,13 +2,15 @@
 
 一款以废土公路、赏金狩猎与可改装战车为核心的网页 RPG。
 
-项目已升级为 **Vite + Vue 3 + TypeScript**：Canvas 以 640×480 内部分辨率渲染程序化像素画场景（世界/城镇/洞窟/室内/战斗），HUD、菜单、对话、商店等界面由 Vue 组件承载，游戏规则按数据、引擎和系统分层。生产构建会输出一个自包含 HTML，仍然支持双击游玩。
+项目使用 **Vite + Vue 3 + TypeScript + PixiJS 8**。PixiJS 以 WebGL 场景图渲染世界、城镇、洞窟、室内、天气和战斗，画布按设备像素比铺满整个浏览器视口；HUD、菜单、对话、商店等界面由 Vue 组件承载，并在独立的可读安全区内响应式缩放。游戏规则按数据、引擎和系统分层，生产构建仍输出一个可双击游玩的自包含 HTML。
 
 > 场景细节：32px 精细瓦片（地形自动衔接边缘、水面动态反光）、44×26 大城镇（多建筑 + 路灯/水井/树木等装饰）、开局从「父亲的修理店」房间开始，洞窟与战斗场景同样有颗粒度升级。
 
+运行时不再每帧重绘 640×480 Canvas。程序化瓦片只在地图载入时生成一次纹理，随后由 PixiJS 负责全屏相机、实体景深、昼夜灯光、GPU 天气粒子、战斗弹道、爆炸和镜头震动。
+
 ## 开发
 
-需要 Node.js 18+。
+需要 Node.js 22+。
 
 ```bash
 npm install
@@ -16,6 +18,13 @@ npm run dev
 ```
 
 Vite 开发服务器默认监听所有网卡，并使用端口 `9001`。本机可通过 `http://localhost:9001` 访问，局域网内其他设备请使用运行本项目电脑的局域网 IP（例如 `http://192.168.1.100:9001`）。
+
+Git 分支约定：`main` 为可发布的完整源码，日常功能开发从 `develop` 切出分支，验收后再合并回 `main`。
+
+```bash
+git switch develop
+git switch -c feature/my-change
+```
 
 ## 构建与检查
 
@@ -83,7 +92,8 @@ src/
     audio/             Web Audio 音乐与音效
     core/              状态、存档和流程总控
     data/              地图、装备、怪物和剧情数据
-    engine/            Canvas 渲染与输入
+    engine/            输入、图集与一次性地图纹理生成
+    pixi/              PixiJS 场景、相机、天气、战车与战斗特效
     systems/           探索和战斗规则
     types.ts           共享领域类型
   stores/              Pinia 应用级设置
@@ -93,7 +103,7 @@ legacy/                 改造前的原生 JS 版本（保留作对照）
 dist/index.html         可直接打开的单文件生产版本
 ```
 
-新增玩法时，优先把规则放进 `src/game/systems`、静态配置放进 `src/game/data`、界面放进 `src/components`，避免把业务逻辑重新堆回 Vue 组件或 Canvas 渲染器。
+新增玩法时，优先把规则放进 `src/game/systems`、静态配置放进 `src/game/data`、Pixi 表现放进 `src/game/pixi`、界面放进 `src/components`，避免把业务逻辑堆回 Vue 组件或渲染场景。
 
 ## 游戏内容
 
