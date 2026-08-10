@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js'
 import type { GameState } from '@/game/types'
-import { BATTLE_BACKGROUND } from '@/game/assets/battle'
+import { BATTLE_BACKGROUND, BATTLE_TANK_ASSET } from '@/game/assets/battle'
 import { store } from '@/game/core/store'
 import { pixiAssets } from '@/game/pixi/assets'
 import { renderHud } from '@/game/pixi/ui/hud'
@@ -13,12 +13,12 @@ import {
   renderGameOver,
   renderIntro,
   renderPassword,
-  renderSleep,
-  renderTitle
+  renderSleep
 } from '@/game/pixi/ui/overlays'
 import { uiScaleFor } from '@/game/pixi/ui/primitives'
 import { renderShop } from '@/game/pixi/ui/shop'
 import { shouldShowTouchControls, TouchControls } from '@/game/pixi/ui/touch'
+import { TitleScreen } from '@/game/pixi/ui/title'
 
 function destroyChildren(layer: Container) {
   for (const child of layer.removeChildren()) child.destroy({ children: true })
@@ -152,6 +152,7 @@ export class GameUiScene extends Container {
   private screenWidth = 1
   private screenHeight = 1
   private uiScale = 1
+  private titleScreen: TitleScreen | null = null
   private signatures = {
     hud: '',
     screen: '',
@@ -198,8 +199,11 @@ export class GameUiScene extends Container {
     const nextScreen = `${this.screenWidth}:${this.screenHeight}:${bottomReserve}:${screenSignature(state)}`
     if (nextScreen !== this.signatures.screen) {
       this.signatures.screen = nextScreen
-      replaceLayer(this.screenLayer, this.renderScreen(state, bottomReserve))
+      const screen = this.renderScreen(state, bottomReserve)
+      this.titleScreen = screen instanceof TitleScreen ? screen : null
+      replaceLayer(this.screenLayer, screen)
     }
+    this.titleScreen?.animate(state.titleT)
 
     const nextBanner = `${state.bannerT > 0}|${state.bannerText}`
     if (nextBanner !== this.signatures.banner) {
@@ -231,12 +235,13 @@ export class GameUiScene extends Container {
 
   private renderScreen(state: GameState, bottomReserve: number): Container {
     if (state.screen === 'title') {
-      return renderTitle(
+      return new TitleScreen(
         state,
         this.screenWidth,
         this.screenHeight,
         this.uiScale,
-        pixiAssets.texture(BATTLE_BACKGROUND.atlas, BATTLE_BACKGROUND.frame)
+        pixiAssets.texture(BATTLE_BACKGROUND.atlas, BATTLE_BACKGROUND.frame),
+        pixiAssets.texture(BATTLE_TANK_ASSET.atlas, BATTLE_TANK_ASSET.frame)
       )
     }
     if (state.screen === 'intro') {

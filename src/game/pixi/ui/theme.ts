@@ -22,8 +22,18 @@ export const UI_COLORS = {
 export const UI_FONT = {
   display: 'Arial Black, PingFang SC, Microsoft YaHei, sans-serif',
   body: 'PingFang SC, Microsoft YaHei, Arial, sans-serif',
-  utility: 'Courier New, PingFang SC, Microsoft YaHei, monospace'
+  utility: 'Courier New, PingFang SC, Microsoft YaHei, monospace',
+  pixel: 'Fusion Pixel 10px Proportional, PingFang SC, Microsoft YaHei, sans-serif'
 } as const
+
+export async function preloadUiFonts(): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts) return
+  try {
+    await document.fonts.load(`20px "${UI_FONT.pixel.split(',')[0]}"`)
+  } catch {
+    // The UI remains playable with the system CJK fallback when a webfont is unavailable.
+  }
+}
 
 export function bodyStyle(fontSize: number, overrides: TextStyleOptions = {}): TextStyleOptions {
   return {
@@ -56,6 +66,18 @@ export function displayStyle(fontSize: number, overrides: TextStyleOptions = {})
     fontWeight: '900',
     fill: UI_COLORS.paper,
     letterSpacing: 0,
+    ...overrides
+  }
+}
+
+export function pixelStyle(fontSize: number, overrides: TextStyleOptions = {}): TextStyleOptions {
+  return {
+    fontFamily: UI_FONT.pixel,
+    fontSize,
+    fontWeight: '400',
+    fill: UI_COLORS.paper,
+    letterSpacing: 0,
+    lineHeight: Math.round(fontSize * 1.18),
     ...overrides
   }
 }

@@ -3,6 +3,7 @@ import { hudLayout } from '@/game/pixi/ui/hud'
 import { battleUiLayout } from '@/game/pixi/ui/overlays'
 import { listWindowRange, uiScaleFor } from '@/game/pixi/ui/primitives'
 import { shouldShowTouchControls, touchControlLayout } from '@/game/pixi/ui/touch'
+import { titleScreenLayout } from '@/game/pixi/ui/title'
 
 describe('Pixi fullscreen UI layout', () => {
   it('anchors HUD panels to the real ultrawide viewport edges', () => {
@@ -97,5 +98,23 @@ describe('Pixi fullscreen UI layout', () => {
     expect(layout.commandWidth).toBeLessThanOrEqual(width * 0.6)
     expect(layout.edge + layout.commandWidth).toBeLessThan(width - layout.edge)
     expect(layout.lowerY).toBe(height - layout.edge)
+  })
+
+  it.each([
+    [2048, 976],
+    [3440, 1440],
+    [844, 390],
+    [390, 844],
+    [320, 568]
+  ])('keeps the title composition reachable at %ix%i', (width, height) => {
+    const scale = uiScaleFor(width, height)
+    const layout = titleScreenLayout(width, height, scale)
+
+    expect(layout.contentX).toBeGreaterThanOrEqual(layout.edge)
+    expect(layout.menuX + layout.menuWidth).toBeLessThanOrEqual(width - layout.edge)
+    expect(layout.logoY).toBeGreaterThanOrEqual(layout.edge)
+    expect(layout.menuY).toBeGreaterThan(layout.subtitleY)
+    expect(layout.menuY + layout.menuHeight).toBeLessThanOrEqual(height - layout.edge)
+    expect(layout.rowHeight).toBeGreaterThanOrEqual(42)
   })
 })

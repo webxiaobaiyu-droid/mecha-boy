@@ -6,6 +6,7 @@ import { WeatherLayer, type WeatherPresentation } from '@/game/pixi/WeatherLayer
 import { pixiAssets } from '@/game/pixi/assets'
 import { preloadGameAssets } from '@/game/assets'
 import { GameUiScene } from '@/game/pixi/GameUiScene'
+import { preloadUiFonts } from '@/game/pixi/ui/theme'
 
 export class PixiGameRenderer {
   private app = new Application()
@@ -34,7 +35,7 @@ export class PixiGameRenderer {
     this.app.stop()
     this.app.stage.eventMode = 'static'
     this.app.stage.addChild(this.background, this.exploration, this.battle, this.weather, this.ui)
-    await Promise.all([preloadGameAssets(), pixiAssets.preload()])
+    await Promise.all([preloadGameAssets(), pixiAssets.preload(), preloadUiFonts()])
     this.resize(true)
     this.initialized = true
   }

@@ -1,5 +1,13 @@
 /* 页面级基础样式 */
 
+@font-face {
+  font-family: 'Fusion Pixel 10px Proportional';
+  src: url('../assets/fonts/fusion-pixel-10px-proportional-zh-hans.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 html,
 body {
   width: 100%;
